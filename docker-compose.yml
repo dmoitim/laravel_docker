@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # banco de dados
+  database:
+    image: postgres
+    container_name: database
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: Senha2023!
+      POSTGRES_DB: laravel_docker
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - laravel-network
+
+  # servidor web
+  php-apache:
+    container_name: php-apache
+    build:
+      context: ./php
+    ports:
+      - '8080:80'
+    volumes:
+      - ./src:/var/www/nome_projeto
+      - ./apache/default.conf:/etc/apache2/sites-enabled/000-default.conf
+    depends_on:
+      - database
+    networks:
+      - laravel-network
+
+  # administrador do banco de dados
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "dmoitim@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "PgAdmin2023!"
+    ports:
+      - "8081:80"
+    depends_on:
+      - database
+    networks:
+      - laravel-network
+
+networks:
+  laravel-network:
+    driver: bridge
